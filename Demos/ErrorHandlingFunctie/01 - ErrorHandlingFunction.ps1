@@ -90,7 +90,7 @@ try {
 try {
     $body = @{
         firstName = 'Simon'
-        lastName = 'Joe'
+        lastName = 'Doe'
         description = 'created by PowerShell'
     } | ConvertTo-Json
     Invoke-RestMethod -Uri "$baseUrl/api/user" -Method 'POST' -Body $body -Headers $headers -ContentType 'application/json'

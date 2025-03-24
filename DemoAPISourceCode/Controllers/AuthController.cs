@@ -41,16 +41,25 @@ namespace ErrorhandlingDemoAPI.Controllers
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                claims: new[] { new Claim(ClaimTypes.Name, "ErrorhandlingDemoAPI") },
-                expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: creds);
 
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, "ErrorhandlingDemoAPI"),
+                new Claim(ClaimTypes.Role, "Admin")
+            };
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(30),
+                signingCredentials: creds
+            );
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
             var expiresAt = DateTime.UtcNow.AddMinutes(30);
 
             return Ok(new TokenResponse { Token = tokenString, ExpiresAt = expiresAt });
         }
+
     }
 
     public record TokenRequest

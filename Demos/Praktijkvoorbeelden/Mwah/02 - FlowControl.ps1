@@ -46,32 +46,30 @@ try {
                     ContentType = 'application/json'
                 }
                 $createdAccount = Invoke-RestMethod @splatParams
-                $outputContext.Data = $createdAccount
-                $outputContext.AccountReference = $createdAccount.Id
-                $auditLogMessage = "Create account was successful. AccountReference is: [$($outputContext.AccountReference)]"
             } catch {
                 if ($_.Exception.StatusCode -eq 408){
                     try {
                         Start-Sleep -Seconds 1
                         $createdAccount = Invoke-RestMethod @splatParams
-                        $outputContext.Data = $createdAccount
-                        $outputContext.AccountReference = $createdAccount.Id
-                        $auditLogMessage = "Create account was successful. AccountReference is: [$($outputContext.AccountReference)]"
                     } catch {
                         if ($_.Exception.StatusCode -eq 408){
                             try {
                                 Start-Sleep -Seconds 1
                                 $createdAccount = Invoke-RestMethod @splatParams
-                                $outputContext.Data = $createdAccount
-                                $outputContext.AccountReference = $createdAccount.Id
-                                $auditLogMessage = "Create account was successful. AccountReference is: [$($outputContext.AccountReference)]"
                             } catch {
                                 throw
                             }
+                        } else {
+                            throw
                         }
                     }
+                } else {
+                    throw
                 }
             }
+            $outputContext.Data = $createdAccount
+            $outputContext.AccountReference = $createdAccount.Id
+            $auditLogMessage = "Create account was successful. AccountReference is: [$($outputContext.AccountReference)]"
             break
         }
     }

@@ -2,7 +2,7 @@
 # Prevent error handling based on the messages being
 # returned. The error messages might be localized based
 # on the 'Accept-Language' header.
-# The call to: /api/user/<id> defaults to return error
+# The call to: /api/user/<id> -by default- returns error
 # messages in German if the 'Accept-Language' is missing.
 #############################################################
 
@@ -32,17 +32,13 @@ try {
     # Determine if a user needs to be [created] or [correlated]
     try {
         $splatParams = @{
-            Uri    = "$($actionContext.Configuration.BaseUrl)/api/user/3"
+            Uri    = "$($actionContext.Configuration.BaseUrl)/api/user/100"
             Method = 'GET'
             Headers = $headers
         }
         $correlatedAccount = Invoke-RestMethod @splatParams
     } catch {
         if ($_.Exception.StatusCode -eq 404){
-
-        }
-        $errorMessage = $_.ErrorDetails.Message | ConvertFrom-Json
-        if ($errorMessage.title -eq 'Not Found'){
             $correlatedAccount = $null
         } else {
             throw
