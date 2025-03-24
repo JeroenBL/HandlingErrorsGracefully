@@ -1,0 +1,27 @@
+{
+    "Configuration": {
+        "BaseUrl": "http://localhost:5240",
+        "ClientId": "demo",
+        "ClientSecret": "demo"
+    },
+    "DryRun": true,
+    "Operation": "undefined",
+    "Data": {
+        "email": "a.doe@example",
+        "lastName": "Doe",
+        "firstName": "Alicia",
+        "description": "Created by HelloID"
+    },
+    "CorrelationConfiguration": {
+        "Enabled": true,
+        "PersonField": "Person.Accounts.MicrosoftActiveDirectory.mail",
+        "PersonFieldValue": "a.doe@example",
+        "AccountField": "email",
+        "AccountFieldValue": "a.doe@example"
+    },
+    "AccountCorrelated": false,
+    "References": {
+        "Account": 1,
+        "ManagerAccount": null
+    }
+}
