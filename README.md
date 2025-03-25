@@ -10,9 +10,20 @@
     - [Postman collection](#postman-collection)
     - [Error responses](#error-responses)
       - [400 BadRequest](#400-badrequest)
+        - [Code](#code)
+        - [Response Windows PowerShell](#response-windows-powershell)
+        - [Response Windows PowerShell](#response-windows-powershell-1)
       - [401 UnAuthorized](#401-unauthorized)
       - [403 Forbidden](#403-forbidden)
       - [404 NotFound](#404-notfound)
+        - [With message detail in either 'English' or 'German'](#with-message-detail-in-either-english-or-german)
+          - [Code](#code-1)
+          - [Response Windows PowerShell](#response-windows-powershell-2)
+          - [Response PowerShell](#response-powershell)
+        - [With message as a simple string](#with-message-as-a-simple-string)
+          - [Code](#code-2)
+          - [Response Windows PowerShell](#response-windows-powershell-3)
+          - [Response PowerShell](#response-powershell-1)
       - [408 RequestTimeout](#408-requesttimeout)
       - [429 TooManyRequests](#429-toomanyrequests)
 
@@ -71,6 +82,76 @@ A Postman collection is available. See: https://github.com/JeroenBL/HandlingErro
 #### 400 BadRequest
 ![400](./assets/400.png)
 
+##### Code
+
+```powershell
+$demoBlock = {
+    $baseUrl = 'http://localhost:5240'
+    $splatGetTokenParams = @{
+        Uri = "$baseUrl/api/auth/token"
+        Method = 'POST'
+        Body = @{
+            ClientId = 'demo'
+            ClientSecret = 'demo'
+        } | ConvertTo-Json
+        ContentType = 'application/json'
+    }
+    $responseToken = Invoke-RestMethod @splatGetTokenParams
+    $headers = @{
+        Authorization = "Bearer $($responseToken.token)"
+        'Accept-Language' = 'en'
+    }
+
+    try {
+        $body = @{
+            firstName = 'Simon'
+            lastName = 'Doe'
+            description = 'created by PowerShell'
+        } | ConvertTo-Json
+        Invoke-RestMethod -Uri "$baseUrl/api/user" -Method 'POST' -Body $body -Headers $headers -ContentType 'application/json'
+    } catch {
+        Write-Host ""
+        Write-Host -Fore Cyan "Exception information"
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host -Fore Yellow "PowerShell version : $($PSVersionTable.PSVersion)"
+        Write-Host -Fore Red "Exception of type  : $($_.Exception.GetType())"
+        Write-Host -Fore Red "Exception message  : $($_.Exception.Message)"
+        Write-Host -Fore Red "ErrorDetails       : $($_.ErrorDetails.Message)"
+        if (!$IsCoreCLR) {
+            Write-Host -Fore Red "ResponseStream     : $([System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream()).ReadToEnd())"
+        }
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host ""
+    }
+}.ToString()
+
+pwsh -command $demoBlock
+powershell -command $demoBlock
+```
+
+##### Response Windows PowerShell
+```
+Exception information
+----------------------------------------------------
+PowerShell version : 5.1.22621.4391
+Exception of type  : System.Net.WebException
+Exception message  : The remote server returned an error: (400) Bad Request.
+ErrorDetails       :
+ResponseStream     : {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"Email":["The Email field is required."]},"traceId":"00-9e5b895c4b294221cf58063fb2454ed7-fdd3781289f8aa07-00"}
+----------------------------------------------------
+```
+
+##### Response Windows PowerShell
+```
+Exception information
+----------------------------------------------------
+PowerShell version : 7.5.0
+Exception of type  : Microsoft.PowerShell.Commands.HttpResponseException
+Exception message  : Response status code does not indicate success: 400 (Bad Request).
+ErrorDetails       : {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"Email":["The Email field is required."]},"traceId":"00-ea3d224a2fb9bcae09e99697468727b1-e802870f65cd791e-00"}
+----------------------------------------------------
+```
+
 #### 401 UnAuthorized
 ![401](./assets/401.png)
 
@@ -80,15 +161,275 @@ A Postman collection is available. See: https://github.com/JeroenBL/HandlingErro
 #### 404 NotFound
 
 Depending on the API call and request headers, a `404` will be thrown in different variations.
+
+##### With message detail in either 'English' or 'German'
+
 ![404-de](./assets/404-de.png)
 
 ![404-en](./assets/404-en.png)
 
+###### Code
+
+```powershell
+$demoBlock = {
+    $baseUrl = 'http://localhost:5240'
+    $splatGetTokenParams = @{
+        Uri = "$baseUrl/api/auth/token"
+        Method = 'POST'
+        Body = @{
+            ClientId = 'demo'
+            ClientSecret = 'demo'
+        } | ConvertTo-Json
+        ContentType = 'application/json'
+    }
+    $responseToken = Invoke-RestMethod @splatGetTokenParams
+    $headers = @{
+        Authorization = "Bearer $($responseToken.token)"
+        'Accept-Language' = 'en'
+    }
+
+    try {
+        Invoke-RestMethod -Uri "$baseUrl/api/user/100" -Method 'GET' -Headers $headers
+    } catch {
+        Write-Host ""
+        Write-Host -Fore Cyan "Exception information"
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host -Fore Yellow "PowerShell version : $($PSVersionTable.PSVersion)"
+        Write-Host -Fore Red "Exception of type  : $($_.Exception.GetType())"
+        Write-Host -Fore Red "Exception message  : $($_.Exception.Message)"
+        Write-Host -Fore Red "ErrorDetails       : $($_.ErrorDetails.Message)"
+        if (!$IsCoreCLR) {
+            Write-Host -Fore Red "ResponseStream     : $([System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream()).ReadToEnd())"
+        }
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host ""
+    }
+}.ToString()
+
+pwsh -command $demoBlock
+powershell -command $demoBlock
+```
+###### Response Windows PowerShell
+
+```
+Exception information
+----------------------------------------------------
+PowerShell version : 5.1.22621.4391
+Exception of type  : System.Net.WebException
+Exception message  : The remote server returned an error: (404) Not Found.
+ErrorDetails       :
+ResponseStream     : {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.5","title":"Not Found","status":404,"detail":"A user with id 100 could not be found. Make sure the Id exists and try again","traceId":"00-1f0e9cad9effb8f3d3cf5832c5ab46e4-7ee7136993250153-00"}
+----------------------------------------------------
+```
+
+###### Response PowerShell
+
+```
+Exception information
+----------------------------------------------------
+PowerShell version : 7.5.0
+Exception of type  : Microsoft.PowerShell.Commands.HttpResponseException
+Exception message  : Response status code does not indicate success: 404 (Not Found).
+ErrorDetails       : {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.5","title":"Not Found","status":404,"detail":"A user with id 100 could not be found. Make sure the Id exists and try again","traceId":"00-108aa897827b9bbf734cc85dd63c0e37-1f7b8be4d36bc3ea-00"}
+----------------------------------------------------
+```
+
+##### With message as a simple string
+
 ![404](./assets/404-string.png)
+
+###### Code
+
+```powershell
+$demoBlock = {
+    $baseUrl = 'http://localhost:5240'
+    $splatGetTokenParams = @{
+        Uri = "$baseUrl/api/auth/token"
+        Method = 'POST'
+        Body = @{
+            ClientId = 'demo'
+            ClientSecret = 'demo'
+        } | ConvertTo-Json
+        ContentType = 'application/json'
+    }
+    $responseToken = Invoke-RestMethod @splatGetTokenParams
+    $headers = @{
+        Authorization = "Bearer $($responseToken.token)"
+        'Accept-Language' = 'en'
+    }
+
+    try {
+        Invoke-RestMethod -Uri "$baseUrl/api/user/search?email=ac.doe@example" -Method 'GET' -Headers $headers
+    } catch {
+        Write-Host ""
+        Write-Host -Fore Cyan "Exception information"
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host -Fore Yellow "PowerShell version : $($PSVersionTable.PSVersion)"
+        Write-Host -Fore Red "Exception of type  : $($_.Exception.GetType())"
+        Write-Host -Fore Red "Exception message  : $($_.Exception.Message)"
+        Write-Host -Fore Red "ErrorDetails       : $($_.ErrorDetails.Message)"
+        if (!$IsCoreCLR) {
+            Write-Host -Fore Red "ResponseStream     : $([System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream()).ReadToEnd())"
+        }
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host ""
+    }
+}.ToString()
+
+pwsh -command $demoBlock
+powershell -command $demoBlock
+```
+###### Response Windows PowerShell
+
+```
+Exception information
+----------------------------------------------------
+PowerShell version : 5.1.22621.4391
+Exception of type  : System.Net.WebException
+Exception message  : The remote server returned an error: (404) Not Found.
+ErrorDetails       :
+ResponseStream     : User with email ac.doe@example not found
+----------------------------------------------------
+```
+
+###### Response PowerShell
+
+```
+Exception information
+----------------------------------------------------
+PowerShell version : 7.5.0
+Exception of type  : Microsoft.PowerShell.Commands.HttpResponseException
+Exception message  : Response status code does not indicate success: 404 (Not Found).
+ErrorDetails       : User with email ac.doe@example not found
+----------------------------------------------------
+```
 
 #### 408 RequestTimeout
 
+Only happens with a `POST` call to: `/api/user` and if the `SimulateFailure` and `RetryCount` options are added to the request headers.
+
 ![408](./assets/408.png)
 
+```powershell
+function Invoke-RestMethodWithRetry {
+    param (
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Params,
+        [int]$MaxRetries,
+        [int]$RetryDelay
+    )
+
+    $retryCount = 0
+
+    while ($retryCount -lt $MaxRetries) {
+        try {
+            return Invoke-RestMethod @Params
+        } catch {
+            if ($_.Exception.StatusCode -eq 408) {
+                $retryCount++
+                if ($retryCount -lt $MaxRetries) {
+                    Write-Host "Request timed out. Retrying... ($retryCount/$MaxRetries)"
+                    Start-Sleep -Seconds $RetryDelay
+                } else {
+                    Write-Host 'Max retries reached. Failing...'
+                    throw
+                }
+            } else {
+                throw
+            }
+        }
+    }
+}
+
+$baseUrl = 'http://localhost:5240'
+$splatGetTokenParams = @{
+    Uri = "$baseUrl/api/auth/token"
+    Method = 'POST'
+    Body = @{
+        ClientId = 'demo'
+        ClientSecret = 'demo'
+    } | ConvertTo-Json
+    ContentType = 'application/json'
+}
+$responseToken = Invoke-RestMethod @splatGetTokenParams
+
+$headers = @{
+    Authorization = "Bearer $($responseToken.token)"
+    'Accept-Language' = 'en'
+    'SimulateFailure' = $true
+    'RetryCount' = 2
+}
+
+$splatParams = @{
+    Uri = "$BaseUrl/api/user"
+    Method = 'POST'
+    Body = @{
+        firstName   = 'Tom'
+        lastName    = 'Doe'
+        email       = 'TDoe@example'
+        description = 'Created by PowerShell'
+    } | ConvertTo-Json
+    Headers = $headers
+    ContentType = 'application/json'
+}
+Invoke-RestMethodWithRetry -Params $splatParams -MaxRetries 3 -RetryDelay 1
+```
+
 #### 429 TooManyRequests
+
 ![429](./assets/429.png)
+
+Only happens when retrieving all users by calling: `/api/user` and if the `SimulateRateLimiting` option is added to the request header.
+
+```powershell
+$baseUrl = 'http://localhost:5240'
+$splatGetTokenParams = @{
+    Uri = "$baseUrl/api/auth/token"
+    Method = 'POST'
+    Body = @{
+        ClientId = 'demo'
+        ClientSecret = 'demo'
+    } | ConvertTo-Json
+    ContentType = 'application/json'
+}
+$responseToken = Invoke-RestMethod @splatGetTokenParams
+$headers = @{
+    Authorization = "Bearer $($responseToken.token)"
+    'Accept-Language' = 'en'
+    'SimulateRateLimiting' = $true
+}
+
+$pageSize = 10
+$pageNumber = 1
+$totalUsersFetched = 0
+$allUsers = [System.Collections.Generic.List[object]]::new()
+$totalUsers = 0
+
+do {
+    try {
+        $splatParams = @{
+            Uri     = "$($baseUrl)/api/user?pageNumber=$pageNumber&pageSize=$pageSize"
+            Method  = 'GET'
+            Headers = $headers
+        }
+
+        $response = Invoke-RestMethod @splatParams
+        $users = $response.Users
+
+        $totalUsers = $response.totalUsers
+        $totalUsersFetched += $users.Count
+        $allUsers.AddRange($users)
+        $pageNumber++
+    } catch {
+        if ($_.Exception.Response.StatusCode -eq 429) {
+            Write-Host "Error: $($_.Exception.Response.StatusCode)"
+            $retryAfter = $_.Exception.Response.Headers.RetryAfter.Delta.Seconds
+            if ($retryAfter) {
+                Start-Sleep -Seconds $retryAfter
+            }
+        } else {
+            throw
+        }
+    }
+} while ($totalUsersFetched -lt $totalUsers)
+```
