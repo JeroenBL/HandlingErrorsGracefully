@@ -57,4 +57,4 @@ Invoke-RestMethod @splatGetTokenParams
 
 ### Postman collection
 
-A Postman collection is available. See:
+A Postman collection is available. See: https://github.com/JeroenBL/HandlingErrorsGracefully/blob/main/DemoAPI/Errorhandling.postman_collection.json
