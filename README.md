@@ -8,6 +8,13 @@
   - [Running the project](#running-the-project)
     - [Authentication](#authentication)
     - [Postman collection](#postman-collection)
+    - [Error responses](#error-responses)
+      - [400 BadRequest](#400-badrequest)
+      - [401 UnAuthorized](#401-unauthorized)
+      - [403 Forbidden](#403-forbidden)
+      - [404 NotFound](#404-notfound)
+      - [408 RequestTimeout](#408-requesttimeout)
+      - [429 TooManyRequests](#429-toomanyrequests)
 
 ## Intro
 
@@ -58,3 +65,30 @@ Invoke-RestMethod @splatGetTokenParams
 ### Postman collection
 
 A Postman collection is available. See: https://github.com/JeroenBL/HandlingErrorsGracefully/blob/main/DemoAPI/Errorhandling.postman_collection.json
+
+### Error responses
+
+#### 400 BadRequest
+![400](./assets/400.png)
+
+#### 401 UnAuthorized
+![401](./assets/401.png)
+
+#### 403 Forbidden
+![403](./assets/403.png)
+
+#### 404 NotFound
+
+Depending on the API call and request headers, a `404` will be thrown in different variations.
+![404-de](./assets/404-de.png)
+
+![404-en](./assets/404-en.png)
+
+![404](./assets/404-string.png)
+
+#### 408 RequestTimeout
+
+![408](./assets/408.png)
+
+#### 429 TooManyRequests
+![429](./assets/429.png)
