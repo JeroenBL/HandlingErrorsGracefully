@@ -44,6 +44,11 @@ try {
         } else {
             throw
         }
+        # if($_.Exception.Message -eq 'Response status code does not indicate success: 404 (Not Found).'){
+        #     $correlatedAccount = $null
+        # } else {
+        #     throw
+        # }
     }
 
     if ($null -ne $correlatedAccount){

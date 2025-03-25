@@ -37,7 +37,7 @@ try {
     }
 
     # Determine if a user needs to be [created] or [correlated]
-    $correlatedAccount = Get-ExampleUser -Id 3
+    $correlatedAccount = Get-ExampleUser -Id 100
 
     if ($null -ne $correlatedAccount){
         $action = 'CreateAccount'
