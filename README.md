@@ -9,9 +9,9 @@
     - [Scenarios](#scenarios)
     - [Notes:](#notes)
     - [Swagger](#swagger)
+    - [Postman collection](#postman-collection)
   - [Running the project](#running-the-project)
     - [Authentication](#authentication)
-    - [Postman collection](#postman-collection)
     - [Error responses](#error-responses)
       - [400 BadRequest](#400-badrequest)
         - [Code](#code)
@@ -68,6 +68,10 @@ The API comes with a swagger interface located at: `{url}/swagger/index.html`
 
 ![swagger](./assets/swagger.png)
 
+### Postman collection
+
+A Postman collection is available. See: https://github.com/JeroenBL/HandlingErrorsGracefully/blob/main/Errorhandling.postman_collection.json
+
 ## Running the project
 
 1. Donwload the latest release from: https://github.com/JeroenBL/HandlingErrorsGracefully/releases
@@ -95,10 +99,6 @@ $splatGetTokenParams = @{
 }
 Invoke-RestMethod @splatGetTokenParams
 ```
-
-### Postman collection
-
-A Postman collection is available. See: https://github.com/JeroenBL/HandlingErrorsGracefully/blob/main/DemoAPI/Errorhandling.postman_collection.json
 
 ### Error responses
 

@@ -79,6 +79,42 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/user",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -194,13 +230,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "SimulateFailure",
-								"value": "True",
-								"type": "text"
-							},
-							{
 								"key": "RetryCount",
-								"value": "1",
+								"value": "2",
 								"type": "text"
 							}
 						],
@@ -221,25 +252,6 @@
 							"path": [
 								"api",
 								"user"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "testconnection",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/api/user/testconnection",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"user",
-								"testconnection"
 							]
 						}
 					},
@@ -268,6 +280,30 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get roles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "ForceForbidden",
+								"value": "True",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -289,7 +325,13 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "ngrok-skip-browser-warning",
+						"value": "true",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n  \"clientId\": \"demo\",\r\n  \"clientSecret\": \"demo\"\r\n}",
