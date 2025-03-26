@@ -42,19 +42,19 @@ This repository contains all the materials for an error handling and debugging s
 
 ## DemoAPI
 
-The DemoAPI returns multiple error responses, allowing you to test and familiarize yourself with how different errors in PowerShell can be resolved in various scenarios. Below is a table listing common error scenarios and the appropriate solutions. By practicing with these scenarios, you will become a true debugging ninja.
+The DemoAPI returns multiple error responses, allowing you to test and familiarize yourself with how different errors in PowerShell can be resolved in various scenarios. Below is a table listing common error scenarios and the appropriate solutions. By practicing with these scenarios, you will become a true error handling and debugging ninja.
 
 ### Scenarios
 
-| Error Type / scenario   | Description                                                       | Possible Solution                                                       | Method/API Call         | Header Control                       |
-| ----------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------- | ------------------------------------ |
-| `400 Bad Request`       | The request is missing required parameters or has invalid values. | Ensure all required parameters are provided and correctly formatted.    | `POST /api/users`       | -                                    |
-| `401 Unauthorized`      | Authentication failed due to invalid credentials.                 | Verify the provided credentials (ClientId/ClientSecret).                | `POST /api/token`       | -                                    |
-| `403 Forbidden`         | The user does not have permission to access the resource.         | Ensure the user has the correct roles or permissions.                   | `GET /api/roles`        | `ForceForbidden` (set to true)       |
-| `408 Request Timeout`   | The request took too long and timed out.                          | Retry the request using retry logic (retry count set in headers).       | `POST /api/users`       | `RetryCount` header                  |
-| `429 Too Many Reqeusts` | Too many requests have been made in a short period.               | Wait for a while and try again later.                                   | `GET /api/users`        | `SimulateRateLimiting` (set to true) |
-| `404`                   | Errors will be returned in the language specified.                | Check the `Accept-Language` header and adjust for the desired language. | `GET /api/users/{id}`   | `Accept-Language` header             |
-| `404`                   | Errors will be returned as a string instead of an JSON.           | Required different handling contrary to the previous 404.               | `GET /api/users/search` | -                                    |
+| Error Type / scenario   | Description                                                       | Possible Solution                                                           | Method/API Call         | Header Control                       |
+| ----------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------- | ------------------------------------ |
+| `400 Bad Request`       | The request is missing required parameters or has invalid values. | Ensure all required parameters are provided and correctly formatted.        | `POST /api/users`       | -                                    |
+| `401 Unauthorized`      | Authentication failed due to invalid credentials.                 | Verify the provided credentials (ClientId/ClientSecret).                    | `POST /api/token`       | -                                    |
+| `403 Forbidden`         | The user does not have permission to access the resource.         | Ensure the user has the correct roles or permissions.                       | `GET /api/roles`        | `ForceForbidden` (set to true)       |
+| `408 Request Timeout`   | The request took too long and timed out.                          | Retry the request using retry logic (retry count set in headers).           | `POST /api/users`       | `RetryCount` header                  |
+| `429 Too Many Reqeusts` | Too many requests have been made in a short period.               | Wait for a while and try again later.                                       | `GET /api/users`        | `SimulateRateLimiting` (set to true) |
+| `404 Not Found`         | Errors will be returned in the language specified.                | Check the `Accept-Language` header and adjust for the desired language.     | `GET /api/users/{id}`   | `Accept-Language` header             |
+| `404 Not Found`         | Errors will be returned as a string instead of an JSON.           | Requires different error handling contrary to the previous `404 Not Found`. | `GET /api/users/search` | -                                    |
 
 > [!NOTE]
 > **Languages**:<br> Depending on the `Accept-Language` header (e.g., `en` for English or `de` for German), error messages will be returned in the requested language. The API defaults to `de`. This only applies to the `api/user<id>` endpoint.
