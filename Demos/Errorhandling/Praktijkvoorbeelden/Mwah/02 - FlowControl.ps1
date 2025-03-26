@@ -30,7 +30,6 @@ try {
     $script:headers = @{
         Authorization = "Bearer $($responseToken.token)"
         'Accept-Language' = 'en'
-        'SimulateFailure' = $true # Special setting within the demo API to simulate retry logic
         'RetryCount' = 2 # Special setting within the demo API to simulate retry logic
     }
 

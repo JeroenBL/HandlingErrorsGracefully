@@ -1,9 +1,13 @@
 # HandlingErrorsGracefully
 
+> Well, sort of
+
 - [HandlingErrorsGracefully](#handlingerrorsgracefully)
   - [Intro](#intro)
   - [What's in the repo?](#whats-in-the-repo)
   - [DemoAPI](#demoapi)
+    - [Scenarios](#scenarios)
+    - [Notes:](#notes)
     - [Swagger](#swagger)
   - [Running the project](#running-the-project)
     - [Authentication](#authentication)
@@ -29,6 +33,8 @@
 
 ## Intro
 
+This repository contains all the materials for an error handling and debugging session.
+
 ## What's in the repo?
 
 - Source code for the 'DemoAPI' in the `DemoAPISourceCode` folder.
@@ -37,7 +43,24 @@
 
 ## DemoAPI
 
-The DemoAPI is merely an example to demonstrate different error handling responses and how PowerShell deals with them.
+The DemoAPI returns multiple error responses, allowing you to test and familiarize yourself with how different errors in PowerShell can be resolved in various scenarios. The API returns multiple error responses, allowing you to test and familiarize yourself with how different errors in PowerShell can be resolved in various scenarios. Below is a table listing common error scenarios and the appropriate solutions. By practicing with these scenarios, you will become a true debugging ninja.
+
+### Scenarios
+
+| Scenario                  | Error Type             | Description | Possible Solution |
+|---------------------------|------------------------|-------------|-------------------|
+| Invalid Request Parameters | `400 Bad Request`      | The request is missing required parameters or has invalid values. | Ensure all required parameters are provided and correctly formatted. |
+| Unauthorized Access       | `401 Unauthorized`     | Authentication failed due to invalid credentials. | Verify the provided credentials (username/password). |
+| Forbidden Access          | `403 Forbidden`        | The user does not have permission to access the resource. | Ensure the user has the correct roles or permissions. |
+| Resource Not Found        | `404 Not Found`        | The resource could not be found on the server. | Verify the resource ID or path is correct. |
+| Request Timeout           | `408 Request Timeout`  | The request took too long and timed out. | Retry the request using retry logic (retry count set in headers). |
+| Rate Limiting             | `428 Precondition Required` (Rate Limiting) | Too many requests have been made in a short period. | Wait for a while and try again later. |
+| Language-Specific Errors  | `404` | Errors will be returned in the language specified by the `Accept-Language` header (e.g., `en` or `de`). | Check the `Accept-Language` header and adjust for the desired language. |
+
+### Notes:
+- **Languages**: Depending on the `Accept-Language` header (e.g., `en` for English, `fr` or `de` for German), error messages will be returned in the requested language. The API defaults to `de`. This only applies to the `api/user<id>` endpoint.
+- **Retry Logic**: For `408 Request Timeout`, the request may need to be retried using a retry count provided in the headers.
+- **Rate Limiting**: For `428 Precondition Required`, this indicates rate limiting, and you should wait before making further requests.
 
 ### Swagger
 

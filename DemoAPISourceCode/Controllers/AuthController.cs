@@ -33,7 +33,8 @@ namespace ErrorhandlingDemoAPI.Controllers
         /// <response code="200"></response>
         [HttpPost("token")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
-        [ProducesResponseType(401)]
+        [ProducesResponseType(401, Type = typeof(string))]
+        [ProducesResponseType(400, Type = typeof(string))]
         public IActionResult GenerateToken([FromBody] TokenRequest request)
         {
             if (request.ClientId != ClientId || request.ClientSecret != ClientSecret)

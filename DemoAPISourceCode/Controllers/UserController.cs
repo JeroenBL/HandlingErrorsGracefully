@@ -2,6 +2,8 @@
 using ErrorhandlingDemoAPI.Localization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace ErrorhandlingDemoAPI.Controllers
 {
@@ -38,9 +40,18 @@ namespace ErrorhandlingDemoAPI.Controllers
             return faker.Generate(count);
         }
 
-        [HttpGet]
+        /// <summary>
+        /// Retrieves a paginated list of users.
+        /// </summary>
+        /// <param name="simulateRateLimiting">If true, the request will return a 429 TooManyRequests response to simulate rate limiting</param>
+        /// <param name="pageNumber">The page number for pagination. Defaults to 1</param>
+        /// <param name="pageSize">The number of users per page. Defaults to 10</param>
+        /// <returns>A paginated list of users or a 429 TooManyRequests response if rate limiting is simulated</returns>              
+        [HttpGet()]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetUsers([FromHeader(Name = "simulateRateLimiting")] bool simulateRateLimiting, int pageNumber = 1, int pageSize = 10)
+        [SwaggerResponse(200, "Returns the list of users", typeof(User))]
+        [SwaggerResponse(429, "Too many requests – returned if the 'SimulateRateLimiting' header is set to true")]
+        public IActionResult GetUsers([FromHeader(Name = "SimulateRateLimiting")] bool simulateRateLimiting, int pageNumber = 1, int pageSize = 10)
         {
             if (simulateRateLimiting)
             {
@@ -89,15 +100,20 @@ namespace ErrorhandlingDemoAPI.Controllers
             }
         }
 
-        [HttpGet("testconnection")]
-        [Authorize(Roles = "Test")]
-        public IActionResult TestConnection()
-        {
-            return Ok();
-        }
-
+        /// <summary>
+        /// Retrieves a user by their unique identifier
+        /// </summary>
+        /// <param name="id">The unique identifier of the user to retrieve</param>
+        /// <returns>Returns the user if found, or a 404 Not Found if the user does not exist</returns>
+        /// <remarks>
+        /// This API requests support the 'Accept-Language' header for language-specific error responses
+        /// The 'Accept-Language' header can specify the preferred language (e.g., 'en' for English or 'de' for German)
+        /// If the header is not provided, it defaults to 'de' (German)
+        /// </remarks>
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
+        [SwaggerResponse(200, "Returns the user if found.", typeof(User))]
+        [SwaggerResponse(404, "Not Found if the user with the given ID does not exist.")]
         public IActionResult GetUser(int id)
         {
             var user = _users.FirstOrDefault(u => u.Id == id);
@@ -118,13 +134,22 @@ namespace ErrorhandlingDemoAPI.Controllers
             return Ok(user);
         }
 
+        /// <summary>
+        /// Creates a new user
+        /// </summary>
+        /// <param name="user">The user object containing the details of the user to be created</param>
+        /// <param name="retryCount">The number of retry attempts for creating the user. If greater than 0 a 408 Request Timeout will be returned and retry logic needs to be implemented</param>
+        /// <returns>Returns the created user if successful, a 400 Bad Request if a required property is missing, or a 408 Request Timeout</returns>
         [HttpPost()]
         [Authorize(Roles = "Admin")]
-        public IActionResult CreateUser([FromBody] User user, [FromHeader(Name = "simulateFailure")] bool simulateFailure, [FromHeader(Name = "retryCount")] int retryCount)
+        [SwaggerResponse(200, "Returns the created user if successful.", typeof(User))]
+        [SwaggerResponse(400, "Bad Request if a property is missing.")]
+        [SwaggerResponse(408, "Request Timeout if creation fails after retry attempts.")]
+        public IActionResult CreateUser([FromBody] User user, [FromHeader(Name = "RetryCount")] int retryCount)
         {
-            if (retryCount <= 0) retryCount = 4;
+            if (retryCount <= 0) retryCount = 0;
 
-            if (simulateFailure && _attemptCount < retryCount)
+            if (retryCount > 0 && _attemptCount < retryCount - 1)
             {
                 _attemptCount++;
                 return StatusCode(408, "Request Timeout");
@@ -144,8 +169,15 @@ namespace ErrorhandlingDemoAPI.Controllers
             return Ok(user);
         }
 
+        /// <summary>
+        /// Retrieves a user by their email address
+        /// </summary>
+        /// <param name="email">The unique identifier of the user to retrieve.</param>
+        /// <returns>Returns the user if found, or a 404 Not Found if the user does not exist.</returns>
         [HttpGet("search")]
         [Authorize(Roles = "Admin")]
+        [SwaggerResponse(200, "Returns the user if found.", typeof(User))]
+        [SwaggerResponse(404, "Not Found if the user with the given ID does not exist.")]      
         public IActionResult SearchUsers([FromQuery] string email)
         {
             var filteredUsers = _users.AsQueryable();
@@ -167,11 +199,40 @@ namespace ErrorhandlingDemoAPI.Controllers
 
     public class User
     {
-        public int Id { get; set; }
+        public int Id { get; internal set; }
+
+        /// <summary>
+        /// The FirstName of the user
+        /// </summary>
+        /// <example>John</example>
+        [Required(ErrorMessage = "FirstName is required")]
         public string FirstName { get; set; }
+
+        /// <summary>
+        /// The lastName of the user
+        /// </summary>
+        /// <example>Doe</example>
+        [Required(ErrorMessage = "LastName is required")]
         public string LastName { get; set; }
+
+        /// <summary>
+        /// The Email of the user
+        /// </summary>
+        /// <example>Doe</example>
+        [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
+
+        /// <summary>
+        /// The Description of the user
+        /// </summary>
+        /// <example>Doe</example>
+        [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
-        public bool? Active { get; set; }
+
+        /// <summary>
+        /// Defines if the user is active or not. When a user is created, this value will automatically be set to 'false'
+        /// </summary>
+        /// <example>False</example>
+        public bool? Active { get; internal set; }
     }
 }
