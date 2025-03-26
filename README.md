@@ -29,6 +29,9 @@
           - [Response PowerShell](#response-powershell-1)
       - [408 RequestTimeout](#408-requesttimeout)
       - [429 TooManyRequests](#429-toomanyrequests)
+  - [Error handling - best practices](#error-handling---best-practices)
+    - [Avoid nested try/catch](#avoid-nested-trycatch)
+    - [Let your functions just generate exceptions](#let-your-functions-just-generate-exceptions)
 
 ## Intro
 
@@ -452,4 +455,69 @@ do {
         }
     }
 } while ($totalUsersFetched -lt $totalUsers)
+```
+
+## Error handling - best practices
+
+### Avoid nested try/catch
+
+Structure `try/catch` blocks efficiently. A common mistake is nesting try/catch blocks unnecessarily, like this:
+
+```powershell
+try {
+    try {
+    } catch {
+
+    }
+} catch {
+
+}
+```
+
+- **Unnecessary Complexity**<br>
+  Nesting try/catch blocks like this adds confusion without real benefits.
+- **Redundant Error Handling**<br>
+  If an inner exception is caught and not re-thrown, the outer catch may never trigger, making it redundant.
+- **Harder Debugging**<br>
+  It becomes unclear where errors are actually being handled.
+
+>[!NOTE]
+Only use nested try/catch blocks if they are necessary for controlling flow, such as when you need to handle a specific error while allowing the script to continue executing.
+
+### Let your functions just generate exceptions
+
+It's perfectly fine to let functions generate exceptions without wrapping them in try/catch blocks. Instead of handling every possible error inside a function, let exceptions bubble up and handle them in your main try/catch block.
+
+```powershell
+$script:headers
+
+#region functions
+function New-ExampleUser {
+    [CmdletBinding()]
+    param (
+        $UserAccount
+    )
+
+    $splatParams = @{
+        Uri = "$($actionContext.Configuration.BaseUrl)/api/user"
+        Method = 'POST'
+        Body = $UserAccount | ConvertTo-Json
+        ContentType = 'application/json'
+        Headers = $script:headers
+    }
+    Invoke-RestMethod @splatParams
+}
+#endregion
+
+try {
+    $userAccount = @{
+        firstName = 'Simon'
+        lastName = 'Doe'
+        description = 'created by PowerShell'
+    }
+    $null = New-ExampleUser -UserAccount $userAccount
+} catch {
+    $ex = $PSItem
+    Write-Warning "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($ex.Exception.Message)"
+}
 ```

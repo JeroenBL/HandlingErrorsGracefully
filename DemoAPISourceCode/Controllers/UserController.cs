@@ -41,7 +41,7 @@ namespace ErrorhandlingDemoAPI.Controllers
         }
 
         /// <summary>
-        /// Retrieves a paginated list of users.
+        /// Retrieves a paginated list of users
         /// </summary>
         /// <param name="simulateRateLimiting">If true, the request will return a 429 TooManyRequests response to simulate rate limiting</param>
         /// <param name="pageNumber">The page number for pagination. Defaults to 1</param>
@@ -138,18 +138,18 @@ namespace ErrorhandlingDemoAPI.Controllers
         /// Creates a new user
         /// </summary>
         /// <param name="user">The user object containing the details of the user to be created</param>
-        /// <param name="retryCount">The number of retry attempts for creating the user. If greater than 0 a 408 Request Timeout will be returned and retry logic needs to be implemented</param>
+        /// <param name="retriesBeforeSuccess">The number of retry attempts needed before creating the user. If greater than 0 a 408 Request Timeout will be returned and retry logic needs to be implemented</param>
         /// <returns>Returns the created user if successful, a 400 Bad Request if a required property is missing, or a 408 Request Timeout</returns>
         [HttpPost()]
         [Authorize(Roles = "Admin")]
         [SwaggerResponse(200, "Returns the created user if successful.", typeof(User))]
         [SwaggerResponse(400, "Bad Request if a property is missing.")]
         [SwaggerResponse(408, "Request Timeout if creation fails after retry attempts.")]
-        public IActionResult CreateUser([FromBody] User user, [FromHeader(Name = "RetryCount")] int retryCount)
+        public IActionResult CreateUser([FromBody] User user, [FromHeader(Name = "RetriesBeforeSuccess")] int retriesBeforeSuccess)
         {
-            if (retryCount <= 0) retryCount = 0;
+            if (retriesBeforeSuccess <= 0) retriesBeforeSuccess = 0;
 
-            if (retryCount > 0 && _attemptCount < retryCount - 1)
+            if (retriesBeforeSuccess > 0 && _attemptCount < retriesBeforeSuccess)
             {
                 _attemptCount++;
                 return StatusCode(408, "Request Timeout");

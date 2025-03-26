@@ -1,44 +1,18 @@
 #################################################################################
-# Account creation may fail on the first attempt due to network or server issues.
-# To handle this, we've implemented a retry mechanism to attempt the
-# creation process max. 2 times before finally throwing an error.
+# When retrieving all users using pagination, you might run in a situation where
+# the API has rate limiting. Meaning; you can only make a certain amount of API
+# calls per minute resulting in a 429 TooManyRequests error.
+# To handle this, we need to implement a retry/wait strategy.
 #################################################################################
 $script:headers
 $action = 'CreateAccount'
 
 #region functions
-function Invoke-RestMethodWithRetry {
-    param (
-        [Parameter(Mandatory = $true)]
-        [hashtable]$Params,
-        [int]$MaxRetries,
-        [int]$RetryDelay
-    )
-
-    $retryCount = 0
-
-    while ($retryCount -lt $MaxRetries) {
-        try {
-            return Invoke-RestMethod @Params
-        } catch {
-            if ($_.Exception.StatusCode -eq 408) {
-                $retryCount++
-                if ($retryCount -lt $MaxRetries) {
-                    Write-Information "Request timed out. Retrying... ($retryCount/$MaxRetries)"
-                    Start-Sleep -Seconds $RetryDelay
-                } else {
-                    Write-Information 'Max retries reached. Failing...'
-                    throw
-                }
-            } else {
-                throw
-            }
-        }
-    }
-}
 #endregion functions
 
 try {
+    $correlationValue = $actionContext.CorrelationConfiguration.PersonFieldValue
+
     # Get token
     try {
         $splatGetTokenParams = @{
@@ -59,21 +33,47 @@ try {
     $script:headers = @{
         Authorization = "Bearer $($responseToken.token)"
         'Accept-Language' = 'en'
-        'SimulateFailure' = $true # Special setting within the demo API to simulate retry logic
-        'RetryCount' = 2 # Special setting within the demo API to simulate retry logic
+        'SimulateRateLimiting' = $true # Special setting within the demo API to simulate rate limiting
+    }
+
+    $pageSize = 10
+    $pageNumber = 1
+    $totalUsersFetched = 0
+    $allUsers = @()
+    $totalUsers = 1
+
+    for ($i = 0; $i -lt 100; $i++) {
+        if ($totalUsersFetched -ge $totalUsers) { break }
+        try {
+            $splatParams = @{
+                Uri     = "$($actionContext.Configuration.BaseUrl)/api/user?pageNumber=$pageNumber&pageSize=$pageSize"
+                Method  = 'GET'
+                Headers = $script:headers
+            }
+
+            $response = Invoke-RestMethod @splatParams
+            $users = $response.Users
+
+            $totalUsers = $response.totalUsers
+            $totalUsersFetched += $users.Count
+            $allUsers += $users
+            $pageNumber++
+        } catch {
+            Start-Sleep -Seconds 10
+        }
+    }
+
+    # Determine if a user needs to be [created] or [correlated]
+    $correlatedAccount = $allUsers | Where-Object { $_.email -eq $correlationValue }
+    if ($null -ne $correlatedAccount){
+        $action = 'CorrelateAccount'
     }
 
     # Process
     switch ($action) {
-        'CreateAccount' {
-            $splatParams = @{
-                Uri = "$($actionContext.Configuration.BaseUrl)/api/user"
-                Method = 'POST'
-                Body = $actionContext.Data | ConvertTo-Json
-                Headers = $script:headers
-                ContentType = 'application/json'
-            }
-            $createdAccount = Invoke-RestMethodWithRetry -Params $splatParams -MaxRetries 2 -RetryDelay 1
+        'CorrelateAccount' {
+            Write-Information 'Correlating HandlingErrorsGracefully account'
+
             $outputContext.Data = $createdAccount
             $outputContext.AccountReference = $createdAccount.Id
             $auditLogMessage = "Create account was successful. AccountReference is: [$($outputContext.AccountReference)]"

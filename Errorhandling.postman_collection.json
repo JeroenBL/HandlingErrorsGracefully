@@ -230,8 +230,8 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "RetryCount",
-								"value": "2",
+								"key": "RetriesBeforeSuccess",
+								"value": "1",
 								"type": "text"
 							}
 						],

@@ -1,6 +1,7 @@
-# Logpoint on line: 51
-# How many times is the try/catch being hit?
-# "Waiting $retryAfter seconds before trying again"
+#####################################################################################
+# Watcher
+#if($allusers.email -contains 'a.doe@example'){Write-Host -fore cyan 'Got Alica Doe'}
+#####################################################################################
 
 # Get token
 try {
@@ -57,5 +58,3 @@ do {
         }
     }
 } while ($totalUsersFetched -lt $totalUsers)
-$allUsers
-

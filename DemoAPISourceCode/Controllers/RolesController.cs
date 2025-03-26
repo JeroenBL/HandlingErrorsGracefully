@@ -13,7 +13,7 @@ namespace ErrorhandlingDemoAPI.Controllers
         private static readonly List<string> FakeRoles = new() { "Admin", "User", "Guest", "SuperUser", "Test" };
 
         /// <summary>
-        /// Retrieves the list of available roles.
+        /// Retrieves the list of available roles
         /// </summary>
         /// <param name="forceForbidden">If true, the request will return a 403 Forbidden response</param>
         /// <returns>A list of roles or a 403 Forbidden response.</returns>

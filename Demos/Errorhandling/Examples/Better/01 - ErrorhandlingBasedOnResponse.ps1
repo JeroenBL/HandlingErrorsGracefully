@@ -1,10 +1,9 @@
-#############################################################
-# Prevent error handling based on the messages being
-# returned. The error messages might be localized based
-# on the 'Accept-Language' header.
-# The call to: /api/user/<id> -by default- returns error
-# messages in German if the 'Accept-Language' is missing.
-#############################################################
+##########################################################################
+# Prevent error handling based on the messages being returned.
+# In this case, the call to: /api/user/<id> -by default- returns error
+# messages in German if the 'Accept-Language' is missing. Best solution
+# is to always check on error code.
+##########################################################################
 
 try {
     # Get token
@@ -26,7 +25,6 @@ try {
     # Set headers
     $headers = @{
         Authorization = "Bearer $($responseToken.token)"
-        #'Accept-Language' = 'en'
     }
 
     # Determine if a user needs to be [created] or [correlated]

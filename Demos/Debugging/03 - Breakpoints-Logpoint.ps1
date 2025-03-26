@@ -1,6 +1,8 @@
-# Logpoint on line: 51
+###################################################################
+# Logpoint on line: 53
 # How many times is the try/catch being hit?
-# "Waiting $retryAfter seconds before trying again"
+# Message: "Waiting $retryAfter seconds before trying again"
+###################################################################
 
 # Get token
 try {
