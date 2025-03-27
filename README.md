@@ -32,6 +32,8 @@
   - [Error handling - best practices](#error-handling---best-practices)
     - [Avoid nested try/catch](#avoid-nested-trycatch)
     - [Let your functions just generate exceptions](#let-your-functions-just-generate-exceptions)
+    - [Try/Catch on the highest possible level](#trycatch-on-the-highest-possible-level)
+    - [](#)
 
 ## Intro
 
@@ -520,3 +522,7 @@ try {
     Write-Warning "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($ex.Exception.Message)"
 }
 ```
+
+### Try/Catch on the highest possible level
+
+###
