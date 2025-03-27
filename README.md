@@ -33,7 +33,8 @@
     - [Avoid nested try/catch](#avoid-nested-trycatch)
     - [Let your functions just generate exceptions](#let-your-functions-just-generate-exceptions)
     - [Try/Catch on the highest possible level](#trycatch-on-the-highest-possible-level)
-    - [](#)
+      - [Now, where should you place a `try/catch` block?](#now-where-should-you-place-a-trycatch-block)
+      - [What about re-throwing exceptions?](#what-about-re-throwing-exceptions)
 
 ## Intro
 
@@ -487,7 +488,7 @@ Only use nested try/catch blocks if they are necessary for controlling flow, suc
 
 ### Let your functions just generate exceptions
 
-It's perfectly fine to let functions generate exceptions without wrapping them in try/catch blocks. Instead of handling every possible error inside a function, let exceptions bubble up and handle them in your main try/catch block.
+It's perfectly fine to let functions generate exceptions without wrapping code in try/catch blocks. Instead of handling every possible error inside a function, let exceptions bubble up and handle them in your main try/catch block.
 
 ```powershell
 $script:headers
@@ -525,4 +526,76 @@ try {
 
 ### Try/Catch on the highest possible level
 
-###
+In the example below, we’ve defined two functions: `New-ExampleUser` and `Invoke-ExampleRestMethod`. The latter is a helper function called by `New-ExampleUser`.
+
+---
+
+#### Now, where should you place a `try/catch` block?
+
+A general rule of thumb is to place it at the **highest possible level**. Lower-level functions don’t have context about their caller.
+
+In this example, if `Invoke-ExampleRestMethod` is called, it has no knowledge of who called it. Therefore, if an exception occurs, it cannot determine whether the application should stop or continue — that decision should be made at a higher level. Therefore, its a common best practice to **always** handle errors at the highest possible level or.
+
+```powershell
+$script:headers
+
+#region functions
+function New-ExampleUser {
+    [CmdletBinding()]
+    param (
+        $UserAccount
+    )
+
+    $splatParams = @{
+        Uri = "$($actionContext.Configuration.BaseUrl)/api/user"
+        Method = 'POST'
+        Body = $UserAccount | ConvertTo-Json
+        ContentType = 'application/json'
+    }
+    Invoke-ExampleRestMethod @splatParams
+}
+
+function Invoke-ExampleRestMethod {
+    [CmdletBinding()]
+    param (
+        $Uri,
+        $Method,
+        $Body,
+        $ContentType
+    )
+
+    $splatParams = @{
+        Uri = $Uri
+        Method = $Method
+        Body = $Body
+        ContentType = $ContentType
+        headers = @{
+        Authorization = "Bearer $($responseToken.token)"
+            'Accept-Language' = 'en'
+        }
+    }
+    Invoke-RestMethod @splatParams
+}
+#endregion
+
+try {
+    $userAccount = @{
+        firstName = 'Simon'
+        lastName = 'Doe'
+        description = 'created by PowerShell'
+    }
+    $null = New-ExampleUser -UserAccount $userAccount
+} catch {
+    $ex = $PSItem
+    Write-Warning "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($ex.Exception.Message)"
+}
+```
+#### What about re-throwing exceptions?
+
+Lower-level functions **can catch and re-throw** exceptions using `throw` or `throw $_` or `$PSCmdlet.ThrowTerminatingError`.
+
+But be careful:
+
+- ✅ **Re-throwing** is useful if you want to **add context** or **log** the error before letting it bubble up.
+- ❌ **Swallowing** exceptions silently or making decisions too deep in the stack can lead to **unexpected behavior** or **lost context**.
+- ⚠️ If you re-throw using `throw $_`, it **preserves the original error**. Using just `throw` inside a `catch` block also does this. Avoid `throw $e` because that creates a new exception causing you to **lose the original exception and stack trace**.
