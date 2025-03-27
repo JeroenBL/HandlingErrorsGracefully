@@ -406,6 +406,9 @@ Invoke-RestMethodWithRetry -Params $splatParams -MaxRetries 3 -RetryDelay 1
 
 Only happens when retrieving all users by calling: `/api/user` and if the `SimulateRateLimiting` option is added to the request header.
 
+> [!NOTE]
+> This needs requires different error handling on Windows PowerShell vs PowerShell because of the response headers.
+
 ```powershell
 $baseUrl = 'http://localhost:5240'
 $splatGetTokenParams = @{
@@ -446,12 +449,17 @@ do {
         $allUsers.AddRange($users)
         $pageNumber++
     } catch {
-        if ($_.Exception.Response.StatusCode -eq 429) {
-            Write-Host "Error: $($_.Exception.Response.StatusCode)"
+       if ($_.Exception.Response.StatusCode -eq 429) {
             $retryAfter = $_.Exception.Response.Headers.RetryAfter.Delta.Seconds
             if ($retryAfter) {
                 Start-Sleep -Seconds $retryAfter
             }
+
+            # Windows PowerShell
+            # $retryAfter = $_.Exception.Response.Headers['Retry-After']
+            # if ($retryAfter) {
+            #     Start-Sleep -Seconds $retryAfter
+            # }
         } else {
             throw
         }

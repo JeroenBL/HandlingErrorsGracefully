@@ -54,6 +54,12 @@ do {
             if ($retryAfter) {
                 Start-Sleep -Seconds $retryAfter
             }
+
+            # Windows PowerShell
+            # $retryAfter = $_.Exception.Response.Headers['Retry-After']
+            # if ($retryAfter) {
+            #     Start-Sleep -Seconds $retryAfter
+            # }
         } else {
             throw
         }

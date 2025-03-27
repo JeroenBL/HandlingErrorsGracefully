@@ -1,6 +1,6 @@
 ###########################################################
-# Define a breakpoint on line 21 and a triggered breakpoint
-# on line 29.
+# Define a breakpoint on line 7 and a triggered breakpoint
+# on line 19.
 ###########################################################
 function GrandParent(){
     'Calling parent'
