@@ -528,14 +528,6 @@ try {
 
 In the example below, we’ve defined two functions: `New-ExampleUser` and `Invoke-ExampleRestMethod`. The latter is a helper function called by `New-ExampleUser`.
 
----
-
-#### Now, where should you place a `try/catch` block?
-
-A general rule of thumb is to place it at the **highest possible level**. Lower-level functions don’t have context about their caller.
-
-In this example, if `Invoke-ExampleRestMethod` is called, it has no knowledge of who called it. Therefore, if an exception occurs, it cannot determine whether the application should stop or continue — that decision should be made at a higher level. Therefore, its a common best practice to **always** handle errors at the highest possible level or.
-
 ```powershell
 $script:headers
 
@@ -590,6 +582,13 @@ try {
     Write-Warning "Error at Line '$($ex.InvocationInfo.ScriptLineNumber)': $($ex.InvocationInfo.Line). Error: $($ex.Exception.Message)"
 }
 ```
+
+#### Now, where should you place a `try/catch` block?
+
+A general rule of thumb is to place it at the **highest possible level**. Lower-level functions don’t have context about their caller.
+
+In this example, if `Invoke-ExampleRestMethod` is called, it has no knowledge of who called it. Therefore, if an exception occurs, it cannot determine whether the application should stop or continue — that decision should be made at a higher level. Therefore, its a common best practice to **always** handle errors at the highest possible level.
+
 #### What about re-throwing exceptions?
 
 Lower-level functions **can catch and re-throw** exceptions using `throw` or `throw $_` or `$PSCmdlet.ThrowTerminatingError`.
