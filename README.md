@@ -379,8 +379,7 @@ $responseToken = Invoke-RestMethod @splatGetTokenParams
 $headers = @{
     Authorization = "Bearer $($responseToken.token)"
     'Accept-Language' = 'en'
-    'SimulateFailure' = $true
-    'RetryCount' = 2
+    'RetriesBeforeSuccess' = 2
 }
 
 $splatParams = @{
