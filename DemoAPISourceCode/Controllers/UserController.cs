@@ -46,7 +46,7 @@ namespace ErrorhandlingDemoAPI.Controllers
         /// <param name="simulateRateLimiting">If true, the request will return a 429 TooManyRequests response to simulate rate limiting</param>
         /// <param name="pageNumber">The page number for pagination. Defaults to 1</param>
         /// <param name="pageSize">The number of users per page. Defaults to 10</param>
-        /// <returns>A paginated list of users or a 429 TooManyRequests response if rate limiting is simulated</returns>              
+        /// <returns>A paginated list of users or a 429 TooManyRequests response if rate limiting is simulated</returns>
         [HttpGet()]
         [Authorize(Roles = "Admin")]
         [SwaggerResponse(200, "Returns the list of users", typeof(User))]
@@ -69,7 +69,7 @@ namespace ErrorhandlingDemoAPI.Controllers
                 {
                     Response.StatusCode = StatusCodes.Status429TooManyRequests;
                     Response.Headers.Append("Retry-After", "10");
-                    return Content("Too many requests. Please try again later.");
+                    return Content("Too many requests. Please try again later");
                 }
 
                 recentRequests.Add(DateTime.UtcNow);
@@ -113,7 +113,7 @@ namespace ErrorhandlingDemoAPI.Controllers
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
         [SwaggerResponse(200, "Returns the user if found.", typeof(User))]
-        [SwaggerResponse(404, "Not Found if the user with the given ID does not exist.")]
+        [SwaggerResponse(404, "Not Found if the user with the given ID does not exist")]
         public IActionResult GetUser(int id)
         {
             var user = _users.FirstOrDefault(u => u.Id == id);
@@ -142,9 +142,9 @@ namespace ErrorhandlingDemoAPI.Controllers
         /// <returns>Returns the created user if successful, a 400 Bad Request if a required property is missing, or a 408 Request Timeout</returns>
         [HttpPost()]
         [Authorize(Roles = "Admin")]
-        [SwaggerResponse(200, "Returns the created user if successful.", typeof(User))]
-        [SwaggerResponse(400, "Bad Request if a property is missing.")]
-        [SwaggerResponse(408, "Request Timeout if creation fails after retry attempts.")]
+        [SwaggerResponse(200, "Returns the created user if successful", typeof(User))]
+        [SwaggerResponse(400, "Bad Request if a property is missing")]
+        [SwaggerResponse(408, "Request Timeout if creation fails after retry attempts")]
         public IActionResult CreateUser([FromBody] User user, [FromHeader(Name = "RetriesBeforeSuccess")] int retriesBeforeSuccess)
         {
             if (retriesBeforeSuccess <= 0) retriesBeforeSuccess = 0;
@@ -172,12 +172,12 @@ namespace ErrorhandlingDemoAPI.Controllers
         /// <summary>
         /// Retrieves a user by their email address
         /// </summary>
-        /// <param name="email">The unique identifier of the user to retrieve.</param>
-        /// <returns>Returns the user if found, or a 404 Not Found if the user does not exist.</returns>
+        /// <param name="email">The email address of the user to retrieve</param>
+        /// <returns>Returns the user if found, or a 404 Not Found if the user does not exist</returns>
         [HttpGet("search")]
         [Authorize(Roles = "Admin")]
-        [SwaggerResponse(200, "Returns the user if found.", typeof(User))]
-        [SwaggerResponse(404, "Not Found if the user with the given ID does not exist.")]      
+        [SwaggerResponse(200, "Returns the user if found", typeof(User))]
+        [SwaggerResponse(404, "Not Found if the user with the given ID does not exist")]
         public IActionResult SearchUsers([FromQuery] string email)
         {
             var filteredUsers = _users.AsQueryable();

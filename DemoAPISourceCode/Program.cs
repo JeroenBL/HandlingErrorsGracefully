@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using ErrorhandlingDemoAPI.Localization;
+using System.Reflection;
+using ErrorhandlingDemoAPI.SwaggerOptions;
 
 namespace ErrorhandlingDemoAPI
 {
@@ -18,6 +20,8 @@ namespace ErrorhandlingDemoAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
+                options.OperationFilter<AcceptLanguageHeaderOperationFilter>();
+
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -42,6 +46,9 @@ namespace ErrorhandlingDemoAPI
                         Array.Empty<string>()
                     }
                 });
+
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
             var key = Encoding.ASCII.GetBytes("i8Z5SkolOrUOyh69p04kxNkTnovE1Ye6");

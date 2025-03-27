@@ -16,7 +16,7 @@ namespace ErrorhandlingDemoAPI.Controllers
         /// Retrieves the list of available roles
         /// </summary>
         /// <param name="forceForbidden">If true, the request will return a 403 Forbidden response</param>
-        /// <returns>A list of roles or a 403 Forbidden response.</returns>
+        /// <returns>A list of roles or a 403 Forbidden response</returns>
         [HttpGet()]
         [Authorize(Roles = "Admin")]
         [SwaggerResponse(200, "Returns the list of roles", typeof(List<string>))]
