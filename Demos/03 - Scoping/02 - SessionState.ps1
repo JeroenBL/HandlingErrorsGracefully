@@ -1,5 +1,6 @@
 ##################################
 # Make sure reflection is enabled!
+# Run in WinPS!
 ##################################
 Import-Module "$PSScriptRoot\ScopingModule.psm1"
 $module = Get-Module ScopingModule
