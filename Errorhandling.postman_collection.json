@@ -147,7 +147,7 @@
 					"response": []
 				},
 				{
-					"name": "Get user by id (error message in German)",
+					"name": "Get user by id",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -225,7 +225,7 @@
 					"response": []
 				},
 				{
-					"name": "Create new user (fails the first time, but succeeds the second time)",
+					"name": "Create new user",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -258,7 +258,7 @@
 					"response": []
 				},
 				{
-					"name": "Get users (rate limiting)",
+					"name": "Get users",
 					"request": {
 						"method": "GET",
 						"header": [
