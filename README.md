@@ -86,6 +86,8 @@ A Postman collection is available. See: https://github.com/JeroenBL/HandlingErro
 >
 > If you wish to change the URL and port, update the `config.json` in the project folder accordingly.
 
+You can also add this variable to the Postman collection (on the collection itself) by adding a _
+
 ### Authentication
 
 A token is required on order to make authenticated calls to the API. To retrieve a token, you will to make an API call to: `api/auth/token`. A body is need with both a `ClientId` and `ClientSecret`. Both are _hardcoded_ set to: `demo`.
