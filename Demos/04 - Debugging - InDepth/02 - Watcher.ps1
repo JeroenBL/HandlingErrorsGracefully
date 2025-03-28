@@ -47,3 +47,4 @@ do {
     $allUsers.AddRange($users)
     $pageNumber++
 } while ($totalUsersFetched -lt $totalUsers)
+$allUsers
