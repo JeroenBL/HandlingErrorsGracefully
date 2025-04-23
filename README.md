@@ -35,6 +35,13 @@
     - [Try/Catch on the highest possible level](#trycatch-on-the-highest-possible-level)
       - [Now, where should you place a `try/catch` block?](#now-where-should-you-place-a-trycatch-block)
       - [What about re-throwing exceptions?](#what-about-re-throwing-exceptions)
+    - [PowerShell vs Windows PowerShell error handling](#powershell-vs-windows-powershell-error-handling)
+      - [Code](#code-3)
+      - [Response PowerShell](#response-powershell-2)
+      - [Dealing with empty `ErrorDetails`](#dealing-with-empty-errordetails)
+        - [Windows PowerShell __only__](#windows-powershell-only)
+      - [Don't fallback to returning the generic .NET message](#dont-fallback-to-returning-the-generic-net-message)
+    - [Key take-away](#key-take-away)
 
 ## Intro
 
@@ -608,3 +615,105 @@ But be careful:
 - ✅ **Re-throwing** is useful if you want to **add context** or **log** the error before letting it bubble up.
 - ❌ **Swallowing** exceptions silently or making decisions too deep in the stack can lead to **unexpected behavior** or **lost context**.
 - ⚠️ If you re-throw using `throw $_`, it **preserves the original error**. Using just `throw` inside a `catch` block also does this. Avoid `throw $e` because that creates a new exception causing you to **lose the original exception and stack trace**.
+
+### PowerShell vs Windows PowerShell error handling
+
+By default, if an API returns an error, you can expect the error to be in `$_.ErrorDetails.Message`. As demonstrated in the code below with a _404-NotFound_ error.
+
+#### Code
+
+```powershell
+$demoBlock = {
+    $baseUrl = 'http://localhost:5240'
+    $splatGetTokenParams = @{
+        Uri = "$baseUrl/api/auth/token"
+        Method = 'POST'
+        Body = @{
+            ClientId = 'demo'
+            ClientSecret = 'demo'
+        } | ConvertTo-Json
+        ContentType = 'application/json'
+    }
+    $responseToken = Invoke-RestMethod @splatGetTokenParams
+    $headers = @{
+        Authorization = "Bearer $($responseToken.token)"
+        'Accept-Language' = 'en'
+    }
+
+    try {
+        Invoke-RestMethod -Uri "$baseUrl/api/user/search?email=ac.doe@example" -Method 'GET' -Headers $headers
+    } catch {
+        Write-Host ""
+        Write-Host -Fore Cyan "Exception information"
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host -Fore Red "Exception message    : $($_.Exception.Message)"
+        Write-Host -Fore Red "ErrorDetails.Message : $($_.ErrorDetails.Message)"
+        Write-Host -Fore Cyan "----------------------------------------------------"
+        Write-Host ""
+    }
+}.ToString()
+
+pwsh -command $demoBlock
+```
+
+#### Response PowerShell
+
+If we take a look at the _exception information_ below, we can see that; `ErrorDetails.Message` contains the error message thrown by the API: _User with email ac.doe@example not found_.
+
+```
+Exception information
+----------------------------------------------------
+Exception message    : Response status code does not indicate success: 404 (Not Found).
+ErrorDetails.Message : User with email ac.doe@example not found
+----------------------------------------------------
+```
+
+In some situations, the `ErrorDetails.Message` object may be empty. In such cases, we are left with only the generic error message thrown by .NET.
+
+```
+Exception information
+----------------------------------------------------
+Exception message    : Response status code does not indicate success: 404 (Not Found).
+ErrorDetails.Message : 
+----------------------------------------------------
+```
+
+> [!NOTE]
+> While this _generic_ message may be sufficient in some scenarios (such as a 404-NotFound, where the generic .NET message provides enough information), when dealing with a _400 Bad Request_, it is crucial to obtain the exact messages thrown by the API because they are far more descriptive and helpful in diagnosing the issue.
+
+#### Dealing with empty `ErrorDetails` 
+
+If the `ErrorDetails` object is empty, we must fall back to retrieving the error response from the API using the following command: 
+
+```powershell
+$([System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream()).ReadToEnd())
+``` 
+
+##### Windows PowerShell __only__
+
+However, while the .NET object `[System.IO.StreamReader]` __is available__ in __all__ PowerShell versions, the function `GetResponseStream()` is __only__ available in _Windows PowerShell_. That is because this function is directly to tied to the type of exception being thrown. In the case of _Windows PowerShell_ the exception type is __always__ a `System.Net.WebException`.
+
+> [!NOTE]
+> An empty `ErrorDetails.Message` is caused by a known _bug_ in Windows PowerShell. However, not all APIs are affected by this bug. Therefore, it’s important to __always test__ how the specific API behaves and whether its impacted. __If the API is not affected, the fall back to `[StreamReader]` will not work.__
+
+> [!WARNING]
+> Not all APIs are affected by the bug. In such cases, the `[StreamReader]` fall back will __not__ work.
+
+#### Don't fallback to returning the generic .NET message
+
+### Key take-away
+
+Don't fall back to returning the _generic_ .NET message unless there's absolutely no other option.  Generic messages can lead to confusion and poor diagnostics.
+
+|                                  | `ErrorDetails.Message`                     | Fall back                                                          | Last resort                      |
+| -------------------------------- | ------------------------------------------ | ------------------------------------------------------------------ | -------------------------------- |
+| Windows PowerShell (on-premises) | Might be empty                             | If `ErrorDetails.Message` is empty, fall back to: `[StreamReader]` | Fall back to `Exception.Message` |
+| PowerShell Core (cloud)          | Always contains error message from the API | -                                                                  | -                                |
+
+- ✅ Always prefer using detailed error messages returned by the API.
+- ⚠️ An empty `ErrorDetails.Message` may is caused by a _bug_ in Windows PowerShell.
+- 🔍 Not all APIs are affected by this bug — thoroughly test to determine behavior.
+- ❌ The `[StreamReader]` fallback will __not work__ if the API is __not affected__ by the bug.
+- 🚫 Don't fall back to the _generic_ .NET message unless there's no other option.
+- 🧩 Generic messages can cause confusion and complicate diagnostics.
+- 📝 As a last resort, log that no detailed error information is available.
