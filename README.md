@@ -618,6 +618,8 @@ But be careful:
 
 ### PowerShell vs Windows PowerShell error handling
 
+First, when it comes to provisioning connectors (and Service Automation), the goal is to seamlessly run our code using PowerShell (cloud) and Windows PowerShell (agent) without modifications to the code. This does affect the error handling and makes it a little more complex. Its important to __always__ test error handling on __both__ PowerShell and Windows PowerShell.
+
 By default, if an API returns an error, you can expect the error to be in `$_.ErrorDetails.Message`. As demonstrated in the code below with a _404-NotFound_ error.
 
 #### Code
@@ -703,17 +705,19 @@ However, while the .NET object `[System.IO.StreamReader]` __is available__ in __
 
 ### Key take-away
 
-Don't fall back to returning the _generic_ .NET message unless there's absolutely no other option.  Generic messages can lead to confusion and poor diagnostics.
+Don't fall back to returning the _generic_ .NET message unless there's absolutely no other option. Generic messages can lead to confusion and poor diagnostics.
 
-|                                  | `ErrorDetails.Message`                     | Fall back                                                          | Last resort                      |
-| -------------------------------- | ------------------------------------------ | ------------------------------------------------------------------ | -------------------------------- |
-| Windows PowerShell (on-premises) | Might be empty                             | If `ErrorDetails.Message` is empty, fall back to: `[StreamReader]` | Fall back to `Exception.Message` |
-| PowerShell Core (cloud)          | Always contains error message from the API | -                                                                  | -                                |
+| PowerShell version         | `ErrorDetails.Message`                     | First Fall back                                                    | Last resort                      |
+| -------------------------- | ------------------------------------------ | ------------------------------------------------------------------ | -------------------------------- |
+| Windows PowerShell (agent) | Might be empty                             | If `ErrorDetails.Message` is empty, fall back to: `[StreamReader]` | Fall back to `Exception.Message` |
+| PowerShell Core (cloud)    | Always contains error message from the API | -                                                                  | -                                |
 
 - ✅ Always prefer using detailed error messages returned by the API.
 - ⚠️ An empty `ErrorDetails.Message` may is caused by a _bug_ in Windows PowerShell.
 - 🔍 Not all APIs are affected by this bug — thoroughly test to determine behavior.
+- 💻 Make sure to test your code in both **PowerShell (cloud)** and **Windows PowerShell (agent)** to identify any runtime-specific issues.
 - ❌ The `[StreamReader]` fallback will __not work__ if the API is __not affected__ by the bug.
+- 🔒 The `[StreamReader]` fallback should remain in place as a safeguard for affected environments.
 - 🚫 Don't fall back to the _generic_ .NET message unless there's no other option.
 - 🧩 Generic messages can cause confusion and complicate diagnostics.
 - 📝 As a last resort, log that no detailed error information is available.
