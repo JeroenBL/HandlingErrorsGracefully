@@ -713,11 +713,11 @@ Don't fall back to returning the _generic_ .NET message unless there's absolutel
 | PowerShell Core (cloud)    | Always contains error message from the API | -                                                                  | -                                |
 
 - ✅ Always prefer using detailed error messages returned by the API.
-- ⚠️ An empty `ErrorDetails.Message` may is caused by a _bug_ in Windows PowerShell.
+- ⚠️ An empty `ErrorDetails.Message` is caused by a _bug_ in Windows PowerShell.
 - 🔍 Not all APIs are affected by this bug — thoroughly test to determine behavior.
-- 💻 Make sure to test your code in both **PowerShell (cloud)** and **Windows PowerShell (agent)** to identify any runtime-specific issues.
-- ❌ The `[StreamReader]` fallback will __not work__ if the API is __not affected__ by the bug.
-- 🔒 The `[StreamReader]` fallback should remain in place as a safeguard for affected environments.
+- 💻 Make sure to test your code in both **PowerShell (cloud)** and **Windows PowerShell (agent)**.
+- ❌ The `[StreamReader]` fall back will __not work__ if the API is __not affected__ by the bug.
+- 🔒 The `[StreamReader]` fall back should remain in place as a safeguard for affected environments.
 - 🚫 Don't fall back to the _generic_ .NET message unless there's no other option.
 - 🧩 Generic messages can cause confusion and complicate diagnostics.
-- 📝 As a last resort, log that no detailed error information is available.
+- 📝 As a last resort, log the generic exception message.
