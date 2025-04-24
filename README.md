@@ -176,7 +176,7 @@ ResponseStream     : {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1
 ----------------------------------------------------
 ```
 
-##### Response Windows PowerShell
+##### Response PowerShell
 ```
 Exception information
 ----------------------------------------------------
